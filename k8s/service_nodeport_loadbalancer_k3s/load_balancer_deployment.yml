@@ -34,9 +34,3 @@ spec:
       targetPort: 80
   clusterIP: 10.43.24.197
   type: LoadBalancer
-status:
-  loadBalancer:
-    ingress:
-    - ip: 192.168.124.10
-    - ip: 192.168.124.20
-    - ip: 192.168.124.21
