@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: liveness-pod
+spec:
+  containers:
+  - name: ubuntu-container
+    image: ubuntu:latest
+    command: ["/bin/bash", "-ec", "touch /tmp/live; sleep 30; rm -f /tmp/live ; sleep 600"]
+    livenessProbe:
+      exec:
+        command: ["cat", "/tmp/live"]
+      initialDelaySeconds: 5
+      periodSeconds: 5
