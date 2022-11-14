@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend-pod
+  labels:
+    environment: production
+    role: frontend
+spec:
+  containers:
+  - name: container
+    image: nginx:latest
