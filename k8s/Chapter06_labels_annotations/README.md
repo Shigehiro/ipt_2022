@@ -3,9 +3,9 @@
 - [1. Labels and Annotations](#1-labels-and-annotations)
 - [2. k8s official reference](#2-k8s-official-reference)
 - [3. Labels](#3-labels)
-  - [3.1. 02_pod-without-initial-labels.yaml ( add labels to the running pod )](#31-02_pod-without-initial-labelsyaml--add-labels-to-the-running-pod-)
-  - [3.2. 03_pod-with-some-labels.yaml ( modify labels )](#32-03_pod-with-some-labelsyaml--modify-labels-)
-  - [3.3. 04_*.yaml ( label selector )](#33-04_yaml--label-selector-)
+  - [3.1. 02\_pod-without-initial-labels.yaml ( add labels to the running pod )](#31-02_pod-without-initial-labelsyaml--add-labels-to-the-running-pod-)
+  - [3.2. 03\_pod-with-some-labels.yaml ( modify labels )](#32-03_pod-with-some-labelsyaml--modify-labels-)
+  - [3.3. 04\_\*.yaml ( label selector )](#33-04_yaml--label-selector-)
   - [3.4. 05 ( label selector advanced )](#34-05--label-selector-advanced-)
 - [4. Annotations](#4-annotations)
 
@@ -146,3 +146,40 @@ backend-pod    1/1     Running   0          24m   environment=production,role=ba
 ```
 
 # 4. Annotations
+
+```text
+$ kubectl apply -f 05_pod-with-annotations.yaml
+pod/pod-with-annotations created
+```
+
+```text
+$ kubectl get po
+NAME                   READY   STATUS    RESTARTS   AGE
+pod-with-annotations   1/1     Running   0          2m34s
+```
+
+```text
+$ kubectl describe po pod-with-annotations |grep ^Anno -A5
+Annotations:      JIRA-issue: https://your-jira-link.com/issue/ABC-1234
+                  commit-SHA: d6s9shb82365yg4ygd782889us28377gf6
+                  owner: https://internal-link.to.website/username
+                  timestamp: 123456789
+Status:           Running
+IP:               10.42.1.64
+```
+
+add annotations to the running pod.
+```text
+$ kubectl annotate pod pod-with-annotations key01=value01
+pod/pod-with-annotations annotated
+
+$ kubectl describe po pod-with-annotations |grep ^Anno -A5
+Annotations:      JIRA-issue: https://your-jira-link.com/issue/ABC-1234
+                  commit-SHA: d6s9shb82365yg4ygd782889us28377gf6
+                  key01: value01
+                  owner: https://internal-link.to.website/username
+                  timestamp: 123456789
+Status:           Running
+```
+
+
