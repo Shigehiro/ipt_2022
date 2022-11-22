@@ -76,6 +76,7 @@ Labels:           app=nginx-app
 
 ```
 $ kubectl label pod pod-with-labels app-
+
 pod/pod-with-labels unlabeled
 
 $ kubectl describe po pod-with-labels |grep ^Labels
