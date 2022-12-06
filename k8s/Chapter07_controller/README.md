@@ -1,7 +1,7 @@
 # 1. Chapter07
 
 - [1. Chapter07](#1-chapter07)
-- [2. What we laarn](#2-what-we-laarn)
+- [2. What we learn](#2-what-we-learn)
 - [3. ReplicaSets](#3-replicasets)
   - [3.1. Delete Pods managed by ReplicaSets](#31-delete-pods-managed-by-replicasets)
   - [3.2. Creating a ReplicaSet Given That a Matching Pod Already Exists](#32-creating-a-replicaset-given-that-a-matching-pod-already-exists)
@@ -10,7 +10,7 @@
   - [4.1. Creating a Simple Deployment with Nginx Containers](#41-creating-a-simple-deployment-with-nginx-containers)
   - [4.2. Rolling Back a Deployment](#42-rolling-back-a-deployment)
 
-# 2. What we laarn
+# 2. What we learn
 
 Managing Pods by:
 - ReplicaSets
