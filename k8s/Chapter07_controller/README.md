@@ -9,6 +9,8 @@
 - [4. Deployment](#4-deployment)
   - [4.1. Creating a Simple Deployment with Nginx Containers](#41-creating-a-simple-deployment-with-nginx-containers)
   - [4.2. Rolling Back a Deployment](#42-rolling-back-a-deployment)
+- [5. StatefulSets, DaemonSets](#5-statefulsets-daemonsets)
+- [6. Jobs](#6-jobs)
 
 # 2. What we learn
 
@@ -280,4 +282,157 @@ No resources found in default namespace.
 
 ## 4.2. Rolling Back a Deployment 
 
+```text
+$ kubectl apply -f 06_app-deployment.yaml
+deployment.apps/app-deployment created
+```
 
+check history.
+```text
+$ kubectl rollout history deployment app-deployment
+deployment.apps/app-deployment
+REVISION  CHANGE-CAUSE
+1         <none>
+```
+
+chagne container name.
+```text
+$ diff -u 06_app-deployment.yaml 07_app-deployment.yaml
+--- 06_app-deployment.yaml      2022-12-13 01:20:24.647437558 +0900
++++ 07_app-deployment.yaml      2022-12-13 01:24:53.616895875 +0900
+@@ -17,5 +17,5 @@
+                 environment: production
+         spec:
+             containers:
+-            - name: nginx-container
++            - name: nginx
+               image: nginx
+```
+
+on the worker node, container name is nginx-container.
+```text
+$ ssh root@192.168.124.20 crictl ps|grep nginx
+Warning: Permanently added '192.168.124.20' (ED25519) to the list of known hosts.
+47e018fba906a       ac8efec875ce3       7 minutes ago       Running             nginx-container      0                   604e2e49ff439       app-deployment-7b76c4564-h4mh5
+```
+
+add `--record`
+```
+$ kubectl apply -f 07_app-deployment.yaml --record
+Flag --record has been deprecated, --record will be removed in the future
+deployment.apps/app-deployment configured
+```
+
+on the worker node.
+```
+$ ssh root@192.168.124.20 crictl ps|grep nginx
+Warning: Permanently added '192.168.124.20' (ED25519) to the list of known hosts.
+6bf7e992add0f       ac8efec875ce3       35 seconds ago      Running             nginx                0                   2e41dc5c6a4df       app-deployment-778d864778-gpnjd
+```
+
+check history.
+```
+~$ kubectl rollout history deployment app-deployment
+deployment.apps/app-deployment
+REVISION  CHANGE-CAUSE
+1         <none>
+2         kubectl apply --filename=07_app-deployment.yaml --record=true
+```
+
+intentionally specify a wrong image name.
+```
+$ kubectl set image deployment app-deployment nginx=ngnx --record
+Flag --record has been deprecated, --record will be removed in the future
+deployment.apps/app-deployment image updated
+```
+
+```
+$ kubectl get pod
+NAME                              READY   STATUS         RESTARTS   AGE
+app-deployment-778d864778-4gz6t   1/1     Running        0          5m33s
+app-deployment-778d864778-gpnjd   1/1     Running        0          5m29s
+app-deployment-778d864778-tjp7w   1/1     Running        0          5m24s
+app-deployment-5698bddb9-49x8s    0/1     ErrImagePull   0          40s
+```
+
+```
+$ kubectl rollout history deployment app-deployment
+deployment.apps/app-deployment
+REVISION  CHANGE-CAUSE
+1         <none>
+2         kubectl apply --filename=07_app-deployment.yaml --record=true
+3         kubectl set image deployment app-deployment nginx=ngnx --record=true
+```
+
+roll back
+```
+$ kubectl rollout undo deployment app-deployment --to-revision 2
+deployment.apps/app-deployment rolled back
+```
+
+```
+$ kubectl get po
+NAME                              READY   STATUS    RESTARTS   AGE
+app-deployment-778d864778-4gz6t   1/1     Running   0          8m17s
+app-deployment-778d864778-gpnjd   1/1     Running   0          8m13s
+app-deployment-778d864778-tjp7w   1/1     Running   0          8m8s
+```
+
+```
+$ kubectl rollout history deployment app-deployment
+deployment.apps/app-deployment
+REVISION  CHANGE-CAUSE
+1         <none>
+3         kubectl set image deployment app-deployment nginx=ngnx --record=true
+4         kubectl apply --filename=07_app-deployment.yaml --record=true
+```
+
+```
+$ kubectl delete deployments.apps app-deployment
+```
+
+# 5. StatefulSets, DaemonSets
+
+learn in later chapter.
+
+- Reference
+  - [statefulsets](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/)
+  - [daemonsets](https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/)
+
+# 6. Jobs
+
+- Reference
+  - [jobs](https://kubernetes.io/docs/concepts/workloads/controllers/job/)
+
+
+```text
+$ kubectl apply -f 08_one-time-job.yaml
+job.batch/one-time-job created
+
+$ kubectl get po
+NAME                 READY   STATUS    RESTARTS   AGE
+one-time-job-6nlq6   1/1     Running   0          29s
+
+$ kubectl get jobs.batch
+NAME           COMPLETIONS   DURATION   AGE
+one-time-job   0/1           19s        19s
+
+$ kubectl get po
+NAME                 READY   STATUS      RESTARTS   AGE
+one-time-job-6nlq6   0/1     Completed   0          50s
+
+$ kubectl get jobs.batch
+NAME           COMPLETIONS   DURATION   AGE
+one-time-job   1/1           32s        52s
+```
+
+```text
+$ kubectl logs  pods/one-time-job-6nlq6
+Tue Dec 13 03:54:02 UTC 2022
+Bye
+```
+
+```text
+$ kubectl delete jobs.batch one-time-job
+job.batch "one-time-job" deleted
+```
