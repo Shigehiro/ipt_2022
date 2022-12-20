@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service-clusterip
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+  clusterIP: 10.43.100.100
+  selector:
+    app: nginx
+    environment: production
+
+
