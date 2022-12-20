@@ -162,6 +162,7 @@ Events:            <none>
 
 - which IPs k8s will pick up for clusterIP?
 - when deploying k8s cluster, specify IP ranges for clusterIP.
+    - [k3s setup vars](https://docs.k3s.io/reference/server-config#networking)
 ```text
 $ kubectl cluster-info dump |grep clusterIP -A1 | grep [0-1].*
                 "clusterIP": "10.43.0.10",
