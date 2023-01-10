@@ -6,6 +6,7 @@
 - [4. ClusterIP service](#4-clusterip-service)
 - [5. Creating a ClusterIP Service with a Custom IP](#5-creating-a-clusterip-service-with-a-custom-ip)
 - [6. LoadBalancer service](#6-loadbalancer-service)
+- [7. Ingress Controller](#7-ingress-controller)
 
 # 2. K8s Service object
 
@@ -233,3 +234,89 @@ $ kubectl delete service nginx-service-clusterip
 ```
 
 # 6. LoadBalancer service
+
+- [k8 official doc](https://kubernetes.io/docs/tasks/access-application-cluster/create-external-load-balancer/)
+- [k3 load balancer](https://docs.k3s.io/networking#service-load-balancer)
+
+- k8s type loadbalancer for baremetal environment
+  - [metal lb](https://metallb.universe.tf/)
+  - [kube-vip](https://github.com/kube-vip/kube-vip)
+
+- cloud service
+  - [aws eks](https://docs.aws.amazon.com/eks/latest/userguide/network-load-balancing.html)
+  - [google gke](https://cloud.google.com/kubernetes-engine/docs/concepts/service#services_of_type_loadbalancer)
+
+- other info
+  - https://www.densify.com/kubernetes-autoscaling/kubernetes-service-load-balancer
+
+
+```
+$ kubectl get po -n kube-system -o wide|grep ^svclb-loadbalancer -c
+0
+
+$ kubectl apply -f 06_type_loadbalancer.yaml
+deployment.apps/nginx-deployment created
+service/loadbalancer-service created
+
+$ kubectl get deployments.apps
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   3/3     3            3           11s
+
+$ kubectl get svc
+NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP                                    PORT(S)          AGE
+kubernetes             ClusterIP      10.43.0.1      <none>                                         443/TCP          129d
+loadbalancer-service   LoadBalancer   10.43.180.78   192.168.124.10,192.168.124.20,192.168.124.21   8080:32665/TCP   17s
+
+
+# curl to external ip
+$ for i in 192.168.124.10 192.168.124.20 192.168.124.21 ; do curl -I http://$i:8080 ;done
+HTTP/1.1 200 OK
+Server: nginx/1.23.3
+Date: Tue, 10 Jan 2023 02:43:44 GMT
+Content-Type: text/html
+Content-Length: 615
+Last-Modified: Tue, 13 Dec 2022 15:53:53 GMT
+Connection: keep-alive
+ETag: "6398a011-267"
+Accept-Ranges: bytes
+
+HTTP/1.1 200 OK
+Server: nginx/1.23.3
+Date: Tue, 10 Jan 2023 02:43:44 GMT
+Content-Type: text/html
+Content-Length: 615
+Last-Modified: Tue, 13 Dec 2022 15:53:53 GMT
+Connection: keep-alive
+ETag: "6398a011-267"
+Accept-Ranges: bytes
+
+HTTP/1.1 200 OK
+Server: nginx/1.23.3
+Date: Tue, 10 Jan 2023 02:43:44 GMT
+Content-Type: text/html
+Content-Length: 615
+Last-Modified: Tue, 13 Dec 2022 15:53:53 GMT
+Connection: keep-alive
+ETag: "6398a011-267"
+Accept-Ranges: bytes
+
+
+$ kubectl get po -n kube-system -o wide|grep ^svclb-loadbalancer -c
+3
+
+$ kubectl get po -n kube-system -o wide|grep ^svclb-loadbalancer
+svclb-loadbalancer-service-b07bc87b-gbb5n   1/1     Running     0              89s    10.42.2.109   lab02-w01   <none>           <none>
+svclb-loadbalancer-service-b07bc87b-bhzlv   1/1     Running     0              89s    10.42.0.103   lab02-m01   <none>           <none>
+svclb-loadbalancer-service-b07bc87b-lb5nx   1/1     Running     0              89s    10.42.1.106   lab02-w02   <none>           <none>
+```
+
+```
+$ kubectl delete -f 06_type_loadbalancer.yaml
+deployment.apps "nginx-deployment" deleted
+service "loadbalancer-service" deleted
+```
+
+# 7. Ingress Controller
+
+skip.
+learn ingress controller in later chapter
